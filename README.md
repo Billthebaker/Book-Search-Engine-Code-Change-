@@ -4,11 +4,8 @@
   - [Project description](#description)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Contribution](#contribution)
-  - [Tests](#tests)
   - [Questions](#questions)
-  - [License](#license)
-
+  
   ## Description
   This is a Book Search Engine that uses Google as the search engine. It is built on Apollo GraphQL instead of a RESTful API.
 
