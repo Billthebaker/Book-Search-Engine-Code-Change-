@@ -2,11 +2,11 @@ const express = require('express');
 const path = require('path');
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
-const typeDefs = require('./typeDefs');
-const resolvers = require('./resolver');
+const typeDefs = require('./schemas/typeDefs');
+const resolvers = require('./schemas/resolver');
 const db = require('./config/connection');
 const routes = require('./routes');
-
+const { authMiddleware } = require('./utils/auth');
 const app = express();
 
 app.use(cors());
@@ -25,14 +25,38 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 async function startServer() {
-  const server = new ApolloServer({ typeDefs, resolvers });
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+      const token = req.headers.authorization || '';
+      // add your logic here to retrieve the user based on the token and return it
+    }
+  });
   await server.start();
   server.applyMiddleware({ app });
 }
 
 startServer();
 
-app.use(routes);
+app.use('/api', routes);
+
+// Middleware for handling 404 errors
+app.use((req, res, next) => {
+  const error = new Error('Not Found');
+  error.status = 404;
+  next(error);
+});
+
+// Middleware for handling all other errors
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message,
+      status: err.status || 500
+    }
+  });
+});
 
 db.once('open', () => {
   app.listen(process.env.PORT || 3001, () => {
